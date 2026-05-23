@@ -1,0 +1,44 @@
+[
+  {
+    "file": "example_continuous.zip",
+    "title": "Example Continuous",
+    "description": "Synthetic continuous-mode dataset from the imzML specification. Great for testing basic viewer functionality.",
+    "mode": "Continuous",
+    "grid": "3×3",
+    "spectra": 9,
+    "size_mb": 0.29
+  },
+  {
+    "file": "example_processed.zip",
+    "title": "Example Processed",
+    "description": "Synthetic processed-mode dataset from the imzML specification. Each pixel carries a variable-length peak list.",
+    "mode": "Processed",
+    "grid": "3×3",
+    "spectra": 9,
+    "size_mb": 0.23
+  },
+  {
+    "file": "la_esi_thaliana.zip",
+    "title": "Arabidopsis Thaliana Leaf (LA-ESI)",
+    "description": "Laser ablation electrospray ionisation MSI of Arabidopsis thaliana leaf tissue. Negative ion mode, 100 µm pixel size.",
+    "mode": "Processed",
+    "grid": "46×26",
+    "spectra": 1196,
+    "size_mb": 114
+  },
+  {
+    "file": "ap_smaldi_mouse_bladder.zip",
+    "title": "Mouse Urinary Bladder (AP-SMALDI HR2MSI)",
+    "description": "Atmospheric-pressure SMALDI high-resolution MSI of mouse urinary bladder tissue. 15 µm pixel size.",
+    "mode": "Processed",
+    "grid": "260×134",
+    "spectra": 34840,
+    "size_mb": 512
+  },
+  {
+    "external_url": "https://massive.ucsd.edu/ProteoSAFe/dataset.jsp?accession=MSV000086102",
+    "title": "Gastric Mouse Tumor (MALDI FT-ICR)",
+    "description": "MALDI FT-ICR MSI of mouse gastric tumor tissue (MassIVE MSV000086102). Download both .imzML and .ibd from the dataset page, then open them with the button above.",
+    "mode": "Processed"
+  }
+]

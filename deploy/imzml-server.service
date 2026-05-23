@@ -1,0 +1,26 @@
+[Unit]
+Description=imzML Viewer Server
+Documentation=https://imzmlparser.com
+After=network.target
+
+[Service]
+Type=simple
+User=adityasarna
+Group=adityasarna
+WorkingDirectory=/opt/imzml
+
+# No default dataset — server starts at the open panel, samples listed there
+ExecStart=/opt/imzml/build/bin/imzml_server --port 8080
+
+# OpenMS shared libs live here
+Environment=LD_LIBRARY_PATH=/opt/miniforge3/envs/openms_env/lib:/opt/imzml/build/lib
+Environment=OPENMS_DATA_PATH=/opt/miniforge3/envs/openms_env/share/OpenMS
+
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=imzml-server
+
+[Install]
+WantedBy=multi-user.target

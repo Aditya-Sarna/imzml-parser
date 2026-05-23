@@ -1,0 +1,102 @@
+name: Build & Cache
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  build:
+    name: ${{ matrix.os }} / ${{ matrix.preset }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            preset: ci
+          - os: ubuntu-24.04
+            preset: ci
+
+    steps:
+      # ----------------------------------------------------------------
+      # 1. Checkout
+      # ----------------------------------------------------------------
+      - uses: actions/checkout@v4
+
+      # ----------------------------------------------------------------
+      # 2. Install system dependencies
+      # ----------------------------------------------------------------
+      - name: Install deps (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja ccache expat xerces-c
+
+      - name: Install deps (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build ccache libexpat1-dev libxerces-c-dev
+
+      # ----------------------------------------------------------------
+      # 3. ccache — restore from cache before configure
+      #    Key includes: OS, compiler, preset, and a hash of every CMake
+      #    and source file so a source change invalidates the cache.
+      # ----------------------------------------------------------------
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          # Primary key: exact match on all source + cmake files
+          key: ccache-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('**/*.cpp', '**/*.h', '**/CMakeLists.txt', 'CMakePresets.json') }}
+          # Fallback: reuse any previous cache for this OS+preset combo
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ matrix.preset }}-
+
+      # ----------------------------------------------------------------
+      # 4. Configure
+      # ----------------------------------------------------------------
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      # ----------------------------------------------------------------
+      # 5. Build
+      # ----------------------------------------------------------------
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      # ----------------------------------------------------------------
+      # 6. Test
+      # ----------------------------------------------------------------
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }}
+
+      # ----------------------------------------------------------------
+      # 7. ccache stats (shows hit rate — useful for tuning cache size)
+      # ----------------------------------------------------------------
+      - name: ccache stats
+        run: ccache --show-stats
+
+      # ----------------------------------------------------------------
+      # 8. Package (TGZ + ZIP) and upload as workflow artifact
+      #    Artifact is retained for 30 days so it can be downloaded or
+      #    attached to a release.
+      # ----------------------------------------------------------------
+      - name: Package
+        run: cmake --build --preset package
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: imzml-parser-${{ runner.os }}
+          path: build/ci/imzml-parser-*.tar.gz
+          retention-days: 30
+
+      # ----------------------------------------------------------------
+      # 9. On version tags: attach package to GitHub Release
+      # ----------------------------------------------------------------
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/ci/imzml-parser-*.tar.gz

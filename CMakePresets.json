@@ -1,0 +1,94 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 23 },
+
+  "configurePresets": [
+    {
+      "name":        "base",
+      "hidden":      true,
+      "binaryDir":   "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "17",
+        "USE_CCACHE":         "ON",
+        "BUILD_TESTS":        "ON",
+        "BUILD_OPENMS_INTEGRATION": "ON"
+      }
+    },
+
+    {
+      "name":        "release",
+      "displayName": "Release (ccache + Ninja)",
+      "description": "Optimised build for daily use and CI artefact caching",
+      "inherits":    "base",
+      "generator":   "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+
+    {
+      "name":        "debug",
+      "displayName": "Debug (ccache + Ninja)",
+      "description": "Debug build with address sanitiser",
+      "inherits":    "base",
+      "generator":   "Ninja",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS":  "-fsanitize=address,undefined -fno-omit-frame-pointer"
+      }
+    },
+
+    {
+      "name":        "ci",
+      "displayName": "CI (Release, metadata-only integration test)",
+      "description": "Used in GitHub Actions; sets CCACHE_DIR to the Actions cache path",
+      "inherits":    "release",
+      "binaryDir":   "${sourceDir}/build/ci",
+      "environment": {
+        "CCACHE_DIR":      "${sourceDir}/.ccache",
+        "CCACHE_MAXSIZE":  "500M",
+        "CCACHE_COMPRESS": "true",
+        "CCACHE_SLOPPINESS": "time_macros,include_file_mtime"
+      }
+    },
+
+    {
+      "name":        "release-makefiles",
+      "displayName": "Release (ccache + Unix Makefiles)",
+      "description": "Fallback when Ninja is not installed",
+      "inherits":    "base",
+      "generator":   "Unix Makefiles",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+
+  "buildPresets": [
+    { "name": "release",           "configurePreset": "release" },
+    { "name": "debug",             "configurePreset": "debug" },
+    { "name": "ci",                "configurePreset": "ci" },
+    { "name": "release-makefiles", "configurePreset": "release-makefiles" },
+
+    {
+      "name":             "package",
+      "displayName":      "Build + CPack package",
+      "configurePreset":  "release",
+      "targets":          ["package"]
+    }
+  ],
+
+  "testPresets": [
+    {
+      "name":            "release",
+      "configurePreset": "release",
+      "output":          { "verbosity": "verbose" }
+    },
+    {
+      "name":            "ci",
+      "configurePreset": "ci",
+      "output":          { "verbosity": "verbose" },
+      "execution":       { "noTestsAction": "error", "stopOnFailure": true }
+    }
+  ]
+}

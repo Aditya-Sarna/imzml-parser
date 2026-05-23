@@ -1,0 +1,50 @@
+# Build directories (CMakePresets output goes under build/<preset>)
+build/
+cmake-build-*/
+
+# CPack output
+*.tar.gz
+*.zip
+*.deb
+*.rpm
+*.pkg
+
+# Keep small example datasets under samples/
+!samples/*.zip
+
+# ccache content — keep the conf file, ignore everything else
+.ccache/*
+!.ccache/ccache.conf
+
+# CMake generated
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+install_manifest.txt
+cmake_install.cmake
+_CPack_Packages/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime / logs
+logs/
+*.log
+*.err
+*.pid
