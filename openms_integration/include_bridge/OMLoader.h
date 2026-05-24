@@ -6,7 +6,7 @@
 // OpenMS headers, Eigen, etc.) so it can be safely included by any TU.
 //
 // Two entry points:
-//   loadWithRealOpenMS()  — legacy Phase-1 helper (RT/msLevel only)
+//   loadWithOpenMS()  — legacy Phase-1 helper (RT/msLevel only)
 //   loadImzMLFull()       — single-pass MzMLHandler-based imzML parser
 //                           (recommended: standard mzML + IMS + IBD binary)
 // ---------------------------------------------------------------------------
