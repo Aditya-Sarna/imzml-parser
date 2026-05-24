@@ -12,6 +12,11 @@ cmake-build-*/
 # Keep small example datasets under samples/
 !samples/*.zip
 
+# Large raw MSI datasets — too big for GitHub (> 100 MB)
+samples/*.ibd
+samples/*.imzML
+samples/*/
+
 # ccache content — keep the conf file, ignore everything else
 .ccache/*
 !.ccache/ccache.conf
