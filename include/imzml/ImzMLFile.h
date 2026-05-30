@@ -1,4 +1,24 @@
-
+// ---------------------------------------------------------------------------
+// ImzMLFile.h
+// User-facing API for loading imzML files.
+//
+// Architecture mirrors OpenMS/include/OpenMS/FORMAT/MzMLFile.h and XMLFile.h:
+//   ImzMLFile::load()
+//     creates ImzMLHandler handler(...)
+//     calls handler.parse()
+//   Then opens the .ibd file via IBDReader.
+//
+// Usage:
+//   imzml::ImzMLFile f;
+//   f.load("image.imzML");
+//
+//   for (std::size_t i = 0; i < f.size(); ++i)
+//   {
+//       auto data = f.getSpectrum(i);
+//       auto coord = f.spectrum(i).coord;
+//       // data.mz, data.intensity
+//   }
+// ---------------------------------------------------------------------------
 #pragma once
 
 #include "imzml/ImzMLTypes.h"

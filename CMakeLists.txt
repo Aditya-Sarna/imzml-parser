@@ -164,6 +164,81 @@ if(BUILD_TESTS)
     )
 
     add_dependencies(test_imzml generate_test_data)
+
+    # -----------------------------------------------------------------------
+    # Large real-data test: AP-SMALDI mouse urinary bladder (S096)
+    #
+    # The .ibd file is ~837 MB and lives in a GitHub Release, not in the
+    # repo tree (same pattern as OpenMS BrukerTIMS test data).
+    #
+    # To enable:
+    #   cmake -DIMZML_DOWNLOAD_TEST_DATA=ON ..
+    #
+    # Release URL base:
+    #   https://github.com/Aditya-Sarna/imzml-test-data/releases/download/v1.0.0/
+    # -----------------------------------------------------------------------
+    option(IMZML_DOWNLOAD_TEST_DATA
+        "Download large real-data MSI files from GitHub Releases for integration tests"
+        OFF)
+
+    set(IMZML_TEST_DATA_BASE_URL
+        "https://github.com/Aditya-Sarna/imzml-test-data/releases/download/v1.0.0"
+        CACHE STRING "Base URL for large test dataset downloads")
+
+    set(IMZML_TEST_DATA_DIR "${CMAKE_BINARY_DIR}/tests/data/real"
+        CACHE PATH "Directory where downloaded real test data is stored")
+
+    if(IMZML_DOWNLOAD_TEST_DATA)
+        set(BLADDER_IMZML "${IMZML_TEST_DATA_DIR}/HR2MSImouseurinarybladderS096.imzML")
+        set(BLADDER_IBD   "${IMZML_TEST_DATA_DIR}/HR2MSImouseurinarybladderS096.ibd")
+
+        # Download .imzML (small XML metadata, always fast)
+        if(NOT EXISTS "${BLADDER_IMZML}")
+            message(STATUS "  Downloading bladder .imzML metadata...")
+            file(DOWNLOAD
+                "${IMZML_TEST_DATA_BASE_URL}/HR2MSImouseurinarybladderS096.imzML"
+                "${BLADDER_IMZML}"
+                SHOW_PROGRESS
+                STATUS dl_status
+            )
+            list(GET dl_status 0 dl_code)
+            if(NOT dl_code EQUAL 0)
+                message(WARNING "  Failed to download .imzML — real-data test disabled")
+                set(IMZML_DOWNLOAD_TEST_DATA OFF)
+            endif()
+        endif()
+
+        # Download .ibd (large binary, ~837 MB — skipped if already present)
+        if(IMZML_DOWNLOAD_TEST_DATA AND NOT EXISTS "${BLADDER_IBD}")
+            message(STATUS "  Downloading bladder .ibd (~837 MB) — this may take a while...")
+            file(DOWNLOAD
+                "${IMZML_TEST_DATA_BASE_URL}/HR2MSImouseurinarybladderS096.ibd"
+                "${BLADDER_IBD}"
+                SHOW_PROGRESS
+                STATUS dl_status
+            )
+            list(GET dl_status 0 dl_code)
+            if(NOT dl_code EQUAL 0)
+                message(WARNING "  Failed to download .ibd — real-data test disabled")
+                file(REMOVE "${BLADDER_IBD}")
+                set(IMZML_DOWNLOAD_TEST_DATA OFF)
+            endif()
+        endif()
+
+        # Register CTest only if both files are present
+        if(EXISTS "${BLADDER_IMZML}" AND EXISTS "${BLADDER_IBD}")
+            add_test(
+                NAME imzml_real_bladder
+                COMMAND ${CMAKE_BINARY_DIR}/tests/test_imzml "${BLADDER_IMZML}"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests
+            )
+            message(STATUS "  Real-data test: ENABLED (${BLADDER_IMZML})")
+        else()
+            message(STATUS "  Real-data test: DISABLED (data not downloaded)")
+        endif()
+    else()
+        message(STATUS "  Real-data test: DISABLED (set -DIMZML_DOWNLOAD_TEST_DATA=ON to enable)")
+    endif()
 endif()
 
 # ---------------------------------------------------------------------------
